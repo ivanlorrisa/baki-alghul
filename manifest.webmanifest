@@ -1,0 +1,21 @@
+{
+  "name": "Baki · Al-ghūl",
+  "short_name": "Baki",
+  "description": "Musculation et Muay thaï : un seul profil, un seul calendrier, hors connexion.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#111113",
+  "theme_color": "#111113",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Baki", "url": "./?space=baki" },
+    { "name": "Al-ghūl", "url": "./?space=alghul" }
+  ]
+}
