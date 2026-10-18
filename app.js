@@ -47,7 +47,16 @@
   // =====================================================================
   // État d'interface
   // =====================================================================
-  var ui = { tab: "today", sheets: [], full: null, ob: null, edit: null, prop: null, form: {}, libFamily: "", libSearch: "", progEx: "", skillLevel: 0, calPast: false, rform: null, aform: null };
+  var OBKEY = "arena.onboarding";
+  var ui = { tab: "today", sheets: [], full: null, ob: restoreOnboarding(), edit: null, prop: null, form: {}, libFamily: "", libSearch: "", progEx: "", skillLevel: 0, calPast: false, rform: null, aform: null };
+
+  /** Le parcours de création du profil est sauvegardé à chaque saisie : un rechargement ne fait rien perdre. */
+  function restoreOnboarding() {
+    try { var o = JSON.parse(localStorage.getItem(OBKEY) || "null"); return o && o.p ? o : null; } catch (e) { return null; }
+  }
+  function saveOnboarding() {
+    try { if (ui.ob) localStorage.setItem(OBKEY, JSON.stringify(ui.ob)); } catch (e) { /* non bloquant */ }
+  }
 
   function space() { return (db && db.settings.space) || "baki"; }
   function settings() { return (db && db.settings) || E.defaultSettings(); }
@@ -133,6 +142,7 @@
     layer.innerHTML = (ui.full ? '<div class="full" id="full">' + fullView() + "</div>" : "") +
       (ui.sheets.length ? '<div class="sheet-wrap" data-act="sheetBackdrop"><div class="sheet" role="dialog" aria-modal="true">' + sheetView(ui.sheets[ui.sheets.length - 1]) + "</div></div>" : "");
     restoreScroll(scroll);
+    saveOnboarding();
   }
   function saveScroll() {
     var s = document.querySelector(".sheet-body"), f = document.getElementById("full");
@@ -1051,7 +1061,7 @@
     obPrev: function () { ui.ob.step--; window.scrollTo(0, 0); render(); },
     obFinish: function () {
       var p = E.clone(ui.ob.p); p.updatedAt = now();
-      if (commit(function (d) { d.profile = p; })) { ui.ob = null; ui.prop = null; ui.rform = null; ui.aform = null; window.scrollTo(0, 0); render(); }
+      if (commit(function (d) { d.profile = p; })) { try { localStorage.removeItem(OBKEY); } catch (e) { /* rien */ } ui.ob = null; ui.prop = null; ui.rform = null; ui.aform = null; window.scrollTo(0, 0); render(); }
     },
     goal: function (d) { var p = draft(d.t), i = p.goals.indexOf(d.g); if (i >= 0) p.goals.splice(i, 1); else p.goals.push(d.g); render(); },
     addSlot: function (d) {
@@ -1370,8 +1380,8 @@
 
   // Changements de champs (cases, heures, fichiers)
   var CHANGE = {
-    equip: function (d, el) { var p = draft(d.t); var i = p.equipment.indexOf(d.e); if (el.checked && i < 0) p.equipment.push(d.e); if (!el.checked && i >= 0) p.equipment.splice(i, 1); },
-    slotTime: function (d, el) { var v = el.value.split(":"); if (v.length === 2) draft(d.t).slots[+d.i].startMinutes = (+v[0]) * 60 + (+v[1]); },
+    equip: function (d, el) { var p = draft(d.t); var i = p.equipment.indexOf(d.e); if (el.checked && i < 0) p.equipment.push(d.e); if (!el.checked && i >= 0) p.equipment.splice(i, 1); saveOnboarding(); },
+    slotTime: function (d, el) { var v = el.value.split(":"); if (v.length === 2) draft(d.t).slots[+d.i].startMinutes = (+v[0]) * 60 + (+v[1]); saveOnboarding(); },
     ciEx: function (d, el) { var ids = ui.sheetF.ids, i = ids.indexOf(d.v); if (el.checked && i < 0) ids.push(d.v); if (!el.checked && i >= 0) ids.splice(i, 1); },
     warm: function (d, el) { var w = ui.full.warm, v = +d.v, i = w.indexOf(v); if (el.checked && i < 0) w.push(v); if (!el.checked && i >= 0) w.splice(i, 1); persistRound(); },
     practiced: function (d, el) { var w = ui.full.practiced, i = w.indexOf(d.v); if (el.checked && i < 0) w.push(d.v); if (!el.checked && i >= 0) w.splice(i, 1); persistRound(); },
@@ -1398,6 +1408,7 @@
     else if (t === "numnull") { v = el.value === "" ? null : parseFloat(String(el.value).replace(",", ".")); if (v != null && isNaN(v)) v = null; }
     else v = el.value;
     setPath(el.dataset.bind, v);
+    saveOnboarding();
     if (el.dataset.bind === "form.tone") commit(function (x) { x.settings.tone = v; });
   }
 

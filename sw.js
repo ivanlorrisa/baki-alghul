@@ -1,5 +1,5 @@
 /* Service worker : l'app fonctionne entièrement hors connexion après la première ouverture. */
-var CACHE = "arena-v1";
+var CACHE = "arena-v2";
 var ASSETS = ["./", "index.html", "styles.css", "data.js", "engine.js", "app.js", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", function (e) {
